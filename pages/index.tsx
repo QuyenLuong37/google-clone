@@ -1,10 +1,12 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
+import Avatar from '../components/Avatar'
+import Footer from '../components/Footer'
 
 const Home: NextPage = () => {
   return (
-    <div className='p-3 grid grid-rows-[auto_1fr]'>
+    <div className='grid grid-rows-[auto_1fr]'>
       <Head>
         <title>Google</title>
         <meta name="description" content="Google clone by QL" />
@@ -12,7 +14,7 @@ const Home: NextPage = () => {
       </Head>
 
       {/* Header */}
-      <header>
+      <header className='p-3 px-4'>
         <div className="flex justify-end">
           <div className='space-x-4 flex items-center text-[#333]'>
             <div className='cursor-pointer hover:underline transition duration-200'>Gmail</div>
@@ -20,15 +22,13 @@ const Home: NextPage = () => {
             <div className='cursor-pointer hover:underline transition duration-200 w-10 h-10 rounded-full flex justify-center items-center hover:bg-[#f0f0f0]'>
               <svg focusable="false" className='w-6 fill-gray-600' viewBox="0 0 24 24"><path d="M6,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM16,6c0,1.1 0.9,2 2,2s2,-0.9 2,-2 -0.9,-2 -2,-2 -2,0.9 -2,2zM12,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2z"></path></svg>
             </div>
-            <div className='relative w-8 h-8 cursor-pointer'>
-              <Image className='rounded-full' src='https://lh3.googleusercontent.com/ogw/ADea4I58nPXFjlEkZ8C6wPwYr2DDX7g9isBEC4BO5VZb=s32-c-mo' layout='fill' />
-            </div>
+            <Avatar url="https://lh3.googleusercontent.com/ogw/ADea4I58nPXFjlEkZ8C6wPwYr2DDX7g9isBEC4BO5VZb=s32-c-mo" />
           </div>
         </div>
       </header>
 
       {/* Body */}
-      <form className='flex  items-center flex-col justify-center flex-grow space-y-6 mt-52'>
+      <form className='flex  items-center flex-col justify-center space-y-6 mt-52 flex-grow'>
           <Image src='https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png' objectFit='cover' width='272px' height='92px' />
 
         <div className='flex items-center border py-[10px] px-3 rounded-full transition duration-200 focus-within:shadow-lg max-w-xl w-full mx-auto'>
@@ -40,14 +40,12 @@ const Home: NextPage = () => {
         </div>
 
         <div className='flex justify-center space-x-4'>
-          <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-300 bg-gray-100 rounded text-gray-700 text-sm'>Google Search</button>
-          <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-300 bg-gray-100 rounded text-gray-700 text-sm'>I'm Feeling Lucky</button>
+          <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-200 bg-gray-100 rounded text-gray-700 text-sm'>Google Search</button>
+          <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-200 bg-gray-100 rounded text-gray-700 text-sm'>I'm Feeling Lucky</button>
         </div>
       </form>
 
-      {/* <footer>
-        Footer
-      </footer> */}
+      <Footer />
     </div>
   )
 }
