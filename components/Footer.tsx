@@ -3,8 +3,8 @@ import React from 'react'
 function Footer() {
   return (
     <div className='grid grid-rows-2 divide-y-2 bg-[#f2f2f2] text-[#70757a]'>
-       <div className='py-4 px-8'>Vietnam</div>
-       <div className='py-4 px-8'>
+       <div className='py-3 2xl:py-4 px-8'>Vietnam</div>
+       <div className='py-3 2xl:py-4 px-8'>
           <div className="flex justify-between">
              <div className="flex space-x-10">
                 <div className='transition duration-200 hover:underline cursor-pointer'>About</div>
