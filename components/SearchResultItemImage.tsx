@@ -7,8 +7,8 @@ function SearchResultItemImage({link, title, image}: any) {
   return (
     <div onClick={() => image?.contextLink ? router.push(image?.contextLink as string, {}) : null} className='flex flex-col rounded  max-h-52 cursor-pointer'>
         <img className='object-cover w-full max-h-32 rounded' src={link}  alt='' />
-        <div className="flex flex-col justify-end flex-grow ">
-            <div className='line-clamp-1 text-[11px] text-gray-500 mb-1'>{title}</div>
+        <div className="flex flex-col justify-end flex-grow mt-2">
+            <div className='line-clamp-1 text-[11px] text-gray-500'>{title}</div>
             <div className='line-clamp-1 text-[11px] text-gray-500'>{image?.contextLink}</div>
         </div>
     </div>
