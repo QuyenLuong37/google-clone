@@ -14,16 +14,12 @@ function SearchInput() {
     const onChangeSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
         setShowSuggest(true);
         setSearchInput(e.target.value)
-    }
-
-    useEffect(() => {
-        if (!!searchInput) {
-            console.log("🚀 ~ file: SearchInput.tsx ~ line 18 ~ useEffect ~ searchInput", searchInput)
+        if (e.target.value) {
             getSearchResults(searchInput).then(res => {
                 setSearchResults(res);
             });
         }
-    }, [searchInput, setSearchResults])
+    }
     
     useEffect(() => {
         function handleClickOutside(event: any) {

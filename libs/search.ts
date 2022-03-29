@@ -1,3 +1,5 @@
+import { message } from "antd";
+
 const URL = `https://www.googleapis.com/customsearch/v1?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}&cx=${process.env.NEXT_PUBLIC_SEARCH_ENGINE_ID}&hl=vi&num=10&safe=active`;
 export const getSearchResults = async (
   query: string,
@@ -12,6 +14,10 @@ export const getSearchResults = async (
     }
   const res = await fetch(url);
   const data = await res.json();
+  if (data.error) {
+    message.error(data.error?.message, 1000000)
+    return null;
+  }
   console.log("🚀custom search data", data)
   return data;
 };
