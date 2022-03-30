@@ -15,7 +15,7 @@ export const getSearchResults = async (
   const res = await fetch(url);
   const data = await res.json();
   if (data.error) {
-    message.error(data.error?.message, 1000000)
+    message.error(data.error?.message, 3000)
     return null;
   }
   console.log("🚀custom search data", data)
