@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
 import { MicrophoneIcon, SearchIcon } from "@heroicons/react/outline";
-import { useRouter } from "next/router";
-import { useRecoilState } from "recoil";
-import { searchInputState, searchResultsState } from "../state/searchAtom";
-import { getSearchResults } from "../libs/search";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
 import { Button, message, Modal, Spin } from "antd";
-import styles from '../styles/SearchInput.module.css'
+import { useRouter } from "next/router";
+import React, { useEffect, useRef, useState } from "react";
+import SpeechRecognition, {
+  useSpeechRecognition
+} from "react-speech-recognition";
+import { useRecoilState } from "recoil";
+import { getSearchResults } from "../libs/search";
+import { searchInputState, searchResultsState } from "../state/searchAtom";
+import styles from '../styles/SearchInput.module.css';
 
 function SearchInput() {
   const [searchInput, setSearchInput]: any = useRecoilState(searchInputState);
@@ -26,17 +26,22 @@ function SearchInput() {
     browserSupportsSpeechRecognition,
     isMicrophoneAvailable,
   } = useSpeechRecognition();
-  const [spinning, setSpinning] = useState(false);
-  const [showVoice, setShowVoice] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showVoiceSearch, setShowVoiceSearch] = useState(false);
+  const [voiceNotFound, setVoiceNotFound] = useState(false);
+  const [isInitVoiceSearch, setIsInitVoiceSearch] = useState(true);
   const onChangeSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setShowSuggest(true);
     setSearchInput(e.target.value);
-    // if (e.target.value) {
-    //     getSearchResults(searchInput).then(res => {
-    //         setSearchResults(res);
-    //     });
-    // }
   };
+
+  useEffect(() => {
+    if (searchInput) {
+      getSearchResults(searchInput).then(res => {
+          setSearchResults(res);
+      });
+    }
+  }, [searchInput, setSearchResults])
 
   useEffect(() => {
     function handleClickOutside(event: any) {
@@ -52,7 +57,72 @@ function SearchInput() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [ref]);
+  
+  useEffect(() => {
+    console.log("listening: ", listening);
+    let timeout: any;
+    if (listening) {
+      setIsInitVoiceSearch(false);
+      timeout = setTimeout(() => {
+        console.log("🚀finalTranscript", finalTranscript)
+        if (finalTranscript) {
+          setShowVoiceSearch(false);
+          router.push(`/results?q=${encodeURI(finalTranscript)}`);
+        } else {
+          setIsSpeaking(false);
+          setVoiceNotFound(true);
+        }
+        
+        setIsInitVoiceSearch(true);
+        SpeechRecognition.stopListening();
+      }, 6000);
+      return () => {
+        clearTimeout(timeout)
+      }
+    } else if (!isInitVoiceSearch) {
+      if (finalTranscript) {
+        setShowVoiceSearch(false);
+        router.push(`/results?q=${encodeURI(finalTranscript)}`);
+      }
+       else {
+        setIsSpeaking(false);
+        setVoiceNotFound(true);
+      }
+    }
+  }, [listening, finalTranscript]);
 
+  useEffect(() => {
+    console.log("🚀voiceNotFound", voiceNotFound)
+    if (voiceNotFound) {
+      let timeout = setTimeout(() => {
+        setShowVoiceSearch(false)
+        setVoiceNotFound(false);
+        setIsInitVoiceSearch(true);
+        SpeechRecognition.stopListening();
+      }, 6000);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [voiceNotFound]);
+  useEffect(() => {
+    console.log("transcript: ", transcript);
+    if (transcript) {
+      setIsSpeaking(listening);
+    }
+  }, [transcript]);
+  // useEffect(() => {
+  //   console.log("interimTranscript: ", interimTranscript);
+  // }, [interimTranscript]);
+  useEffect(() => {
+    console.log("finalTranscript: ", finalTranscript);
+    // console.log("listening: ", listening);
+    // if (!listening && finalTranscript) {
+    //   setShowVoiceSearch(false);
+    //   router.push(`/results?q=${encodeURI(finalTranscript)}`);
+    // }
+  }, [finalTranscript]);
+  
+  
   const onFocusSearchInput = () => {
     if (searchInput) {
       setShowSuggest(true);
@@ -61,38 +131,24 @@ function SearchInput() {
     }
   };
 
-  useEffect(() => {
-    console.log("listening: ", listening);
-    setSpinning(listening);
-  }, [listening]);
-  useEffect(() => {
-    console.log("transcript: ", transcript);
-  }, [transcript]);
-  useEffect(() => {
-    console.log("interimTranscript: ", interimTranscript);
-  }, [interimTranscript]);
-  useEffect(() => {
-    console.log("finalTranscript: ", finalTranscript);
-    console.log("listening: ", listening);
-  }, [finalTranscript]);
-
-  // col1        col2        col3
-  // col1        col2        col3
-  // col1        col2        col3
-  // col1        col2        col3
-  // col1        col2        col3
-
-  const startListening = async () => {
+  const onClickVoice = () => {
     if (!isMicrophoneAvailable) {
       // Render some fallback contentt
       message.error("Vui lòng cho phép trình duyệt truy cập micro!");
     } else if (!browserSupportsSpeechRecognition) {
       message.error("Trình duyệt không hỗ trợ!");
     } else {
-      setSpinning(true);
-      SpeechRecognition.startListening({ language: "ccc" });
-    }
-  };
+      setShowVoiceSearch(true)
+      setIsInitVoiceSearch(true);
+      SpeechRecognition.startListening();
+    } 
+  }
+
+  const closeShowVoice = () => {
+    setShowVoiceSearch(false);
+    setIsInitVoiceSearch(true);
+    SpeechRecognition.stopListening();
+  }
 
   const getRecognition = async () => {
     console.log("transcript: ", transcript);
@@ -112,23 +168,18 @@ function SearchInput() {
     router.push(`/results?q=${encodeURI(query)}`);
   };
 
-  const onClickMic = () => {
-    console.log("🚀onClickMic")
-  
-  }
-
   return (
     <div
       ref={ref}
       className=" relative max-w-md sm:max-w-xl w-full flex items-center  transition duration-200   mx-auto group"
     >
-      <Spin spinning={spinning} />
-      <Button type="primary" onClick={() => startListening()}>
+      <Spin spinning={isSpeaking} />
+      {/* <Button type="primary" onClick={() => startListening()}>
         Start listening
-      </Button>
-      <Button type="primary" onClick={() => getRecognition()}>
+      </Button> */}
+      {/* <Button type="primary" onClick={() => getRecognition()}>
         getRecognition
-      </Button>
+      </Button> */}
 
       <div
         className={
@@ -154,7 +205,7 @@ function SearchInput() {
         />
 
         <svg
-          onClick={() => setShowVoice(true)}
+          onClick={() => onClickVoice()}
           className="cursor-pointer w-6"
           focusable="false"
           viewBox="0 0 24 24"
@@ -199,22 +250,23 @@ function SearchInput() {
 
       <Modal
         title={null}
-        visible={showVoice}
+        visible={showVoiceSearch}
         centered={false}
         width={800}
         bodyStyle={{ padding: "6rem" }}
         footer={null}
-        onCancel={() => setShowVoice(false)}
+        onCancel={() => setShowVoiceSearch(false)}
         
       >
-        <div className="grid grid-cols-[1fr_auto] gap-4 justify-between" >
+        <div className="grid grid-cols-[1fr_minmax(160px,220px)] gap-4 justify-between" >
           <div>
             <div className={styles.listening}>
-              {finalTranscript ? `${finalTranscript}...` : 'Listening...' }
+              {!voiceNotFound ? finalTranscript ? `${finalTranscript}...` : 'Listening...' : 'Please check your microphone or audio levels.'}
             </div>
+            
           </div>
-          <div className="relative cursor-pointer group"  onClick={() => setShowVoice(false)}>
-            <span className={spinning ? "absolute animate-ping bg-red-200 rounded-full h-full w-full opacity-75 inline-flex" : 'absolute  rounded-full h-full w-full inline-flex'}>
+          <div className="relative cursor-pointer group"  onClick={() => closeShowVoice()}>
+            <span className={isSpeaking ? "absolute animate-ping bg-red-200 rounded-full h-full w-full opacity-75 inline-flex" : 'absolute  rounded-full h-full w-full inline-flex'}>
             </span>
             <MicrophoneIcon className="h-40 w-40 stroke-red-500 shadow-lg transition duration-200 hover:shadow-2xl rounded-full p-10 border border-gray-200 text-gray-400 cursor-pointer z-50" />
           </div>
