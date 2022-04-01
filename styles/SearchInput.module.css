@@ -1,0 +1,18 @@
+.listening {
+   width: 0ch;
+   color: white;
+   overflow: hidden;
+   white-space: nowrap;
+   transition: all .2s;
+   /* float: left; */
+   animation: typing steps(22) 2s infinite ;
+   @apply text-2xl font-medium text-gray-400
+}
+@keyframes typing {
+   from {
+       width: 0ch;
+   }
+   to {
+       width: 100%;
+   }
+}

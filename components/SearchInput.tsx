@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { SearchIcon } from "@heroicons/react/outline";
+import { MicrophoneIcon, SearchIcon } from "@heroicons/react/outline";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
 import { searchInputState, searchResultsState } from "../state/searchAtom";
@@ -7,7 +7,8 @@ import { getSearchResults } from "../libs/search";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
-import { Button, message, Spin } from "antd";
+import { Button, message, Modal, Spin } from "antd";
+import styles from '../styles/SearchInput.module.css'
 
 function SearchInput() {
   const [searchInput, setSearchInput]: any = useRecoilState(searchInputState);
@@ -26,6 +27,7 @@ function SearchInput() {
     isMicrophoneAvailable,
   } = useSpeechRecognition();
   const [spinning, setSpinning] = useState(false);
+  const [showVoice, setShowVoice] = useState(false);
   const onChangeSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setShowSuggest(true);
     setSearchInput(e.target.value);
@@ -60,62 +62,74 @@ function SearchInput() {
   };
 
   useEffect(() => {
-      console.log('listening: ', listening);
-      setSpinning(listening);
-    
-  }, [listening])
+    console.log("listening: ", listening);
+    setSpinning(listening);
+  }, [listening]);
   useEffect(() => {
-      console.log('transcript: ', transcript);
-      
-  }, [transcript])
+    console.log("transcript: ", transcript);
+  }, [transcript]);
   useEffect(() => {
-      console.log('interimTranscript: ', interimTranscript);
-      
-  }, [interimTranscript])
+    console.log("interimTranscript: ", interimTranscript);
+  }, [interimTranscript]);
   useEffect(() => {
-      console.log('finalTranscript: ', finalTranscript);
-      console.log('listening: ', listening);
-  }, [finalTranscript])
+    console.log("finalTranscript: ", finalTranscript);
+    console.log("listening: ", listening);
+  }, [finalTranscript]);
 
-
+  // col1        col2        col3
+  // col1        col2        col3
+  // col1        col2        col3
+  // col1        col2        col3
+  // col1        col2        col3
 
   const startListening = async () => {
     if (!isMicrophoneAvailable) {
-        // Render some fallback content
-        message.error('Vui lòng cho phép trình duyệt truy cập micro!');
+      // Render some fallback contentt
+      message.error("Vui lòng cho phép trình duyệt truy cập micro!");
     } else if (!browserSupportsSpeechRecognition) {
-        message.error('Trình duyệt không hỗ trợ!');
+      message.error("Trình duyệt không hỗ trợ!");
     } else {
-        setSpinning(true);
-        SpeechRecognition.startListening({language: 'ccc'});
+      setSpinning(true);
+      SpeechRecognition.startListening({ language: "ccc" });
     }
-  }
+  };
 
   const getRecognition = async () => {
-    console.log('transcript: ', transcript);
-    console.log('interimTranscript: ', interimTranscript);
-    console.log('finalTranscript: ', finalTranscript);
-    console.log('listening: ', listening);
-    console.log('browserSupportsSpeechRecognition: ', browserSupportsSpeechRecognition);
-    console.log('isMicrophoneAvailable: ', isMicrophoneAvailable);
-    console.log('sdadsadSA: ', SpeechRecognition.getRecognition());
-  
-  }
+    console.log("transcript: ", transcript);
+    console.log("interimTranscript: ", interimTranscript);
+    console.log("finalTranscript: ", finalTranscript);
+    console.log("listening: ", listening);
+    console.log(
+      "browserSupportsSpeechRecognition: ",
+      browserSupportsSpeechRecognition
+    );
+    console.log("isMicrophoneAvailable: ", isMicrophoneAvailable);
+    console.log("sdadsadSA: ", SpeechRecognition.getRecognition());
+  };
 
   const navigateToResults = (query: any) => {
     setShowSuggest(false);
     router.push(`/results?q=${encodeURI(query)}`);
   };
 
+  const onClickMic = () => {
+    console.log("🚀onClickMic")
+  
+  }
+
   return (
     <div
       ref={ref}
       className=" relative max-w-md sm:max-w-xl w-full flex items-center  transition duration-200   mx-auto group"
     >
-        <Spin spinning={spinning} />
-        <Button type="primary" onClick={() => startListening()}>Start listening</Button>
-        <Button type="primary" onClick={() => getRecognition()}>getRecognition</Button>
-        
+      <Spin spinning={spinning} />
+      <Button type="primary" onClick={() => startListening()}>
+        Start listening
+      </Button>
+      <Button type="primary" onClick={() => getRecognition()}>
+        getRecognition
+      </Button>
+
       <div
         className={
           searchResults?.items?.length > 0 && showSuggest
@@ -140,6 +154,7 @@ function SearchInput() {
         />
 
         <svg
+          onClick={() => setShowVoice(true)}
           className="cursor-pointer w-6"
           focusable="false"
           viewBox="0 0 24 24"
@@ -181,6 +196,30 @@ function SearchInput() {
           </div>
         </div>
       )}
+
+      <Modal
+        title={null}
+        visible={showVoice}
+        centered={false}
+        width={800}
+        bodyStyle={{ padding: "6rem" }}
+        footer={null}
+        onCancel={() => setShowVoice(false)}
+        
+      >
+        <div className="grid grid-cols-[1fr_auto] gap-4 justify-between" >
+          <div>
+            <div className={styles.listening}>
+              {finalTranscript ? `${finalTranscript}...` : 'Listening...' }
+            </div>
+          </div>
+          <div className="relative cursor-pointer group"  onClick={() => setShowVoice(false)}>
+            <span className={spinning ? "absolute animate-ping bg-red-200 rounded-full h-full w-full opacity-75 inline-flex" : 'absolute  rounded-full h-full w-full inline-flex'}>
+            </span>
+            <MicrophoneIcon className="h-40 w-40 stroke-red-500 shadow-lg transition duration-200 hover:shadow-2xl rounded-full p-10 border border-gray-200 text-gray-400 cursor-pointer z-50" />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
