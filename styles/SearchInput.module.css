@@ -1,10 +1,10 @@
-.listening {
+
+/* .listening {
    width: 0ch;
    color: white;
    overflow: hidden;
    white-space: nowrap;
    transition: all .2s;
-   /* float: left; */
    animation: typing steps(24) 5s infinite ;
    @apply text-2xl font-medium text-gray-400
 }
@@ -15,4 +15,62 @@
    to {
        width: 100%;
    }
-}
+} */
+
+@keyframes grow {
+    0% { max-height: var(--lineHeight); }
+    100% { max-height: calc(var(--lineHeight) * var(--lines)); }
+  }
+  
+  @keyframes carriageReturn {
+    0% { top: 0; }
+    100% { top: calc(var(--lineHeight) * var(--lines)); }
+  }
+  
+  @keyframes type {
+    0% { width: 100%; }
+    100% { width: 0%; }
+  }
+  
+  @keyframes caret {
+    0% { color: var(--bgColor); }
+    100% { color: black; }
+  }
+  
+  .listening {
+    --bgColor: white;
+    --lines: 500;
+    --lineHeight: 2rem;
+    --timePerLine: 3s;
+    --widthCh: 25;
+    --width: calc(var(--widthCh) * 1ch);
+    /* do not touch the time property!!! */
+    --time: calc(var(--lines) * var(--timePerLine));
+    animation: grow var(--time) steps(var(--lines));
+    animation-fill-mode: forwards;
+    background: var(--bgColor);  
+    /* line-height: var(--lineHeight); */
+    max-height: var(--lineHeight);
+    overflow: hidden;
+    position: relative;
+    width: var(--width);
+    word-break: break-all;
+    @apply text-2xl font-medium text-gray-400
+  }
+  
+  .listening::before {
+    content: "";
+    animation: 
+      type var(--timePerLine) linear infinite, 
+      carriageReturn var(--time) steps(var(--lines)) var(--lines),
+      caret 0.5s steps(2) infinite;
+    background: var(--bgColor);
+    border-left: 0px solid;
+    bottom: 0;
+    height: 2rem;
+    position: absolute;
+    right: 0;
+    width: 100%;
+  }
+  
+  

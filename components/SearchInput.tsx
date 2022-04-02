@@ -30,16 +30,23 @@ function SearchInput() {
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
   const [voiceNotFound, setVoiceNotFound] = useState(false);
   const [isInitVoiceSearch, setIsInitVoiceSearch] = useState(true);
-  const onChangeSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeSearch = async (e: React.ChangeEvent<HTMLInputElement> | any) => {
+    console.log("🚀 key: ", e.key)
     setShowSuggest(true);
     setSearchInput(e.target.value);
+  };
+  const onKeyDownSearch = async (e: any) => {
+    console.log("🚀 key: ", e.key)
+    if (e.key === 'Enter') {
+      router.push(`/results?q=${encodeURI(searchInput)}`);
+    }
   };
 
   useEffect(() => {
     if (searchInput) {
-      getSearchResults(searchInput).then(res => {
-          setSearchResults(res);
-      });
+      // getSearchResults(searchInput).then(res => {
+      //     setSearchResults(res);
+      // });
     }
   }, [searchInput, setSearchResults])
 
@@ -83,10 +90,9 @@ function SearchInput() {
       if (finalTranscript) {
         setShowVoiceSearch(false);
         router.push(`/results?q=${encodeURI(finalTranscript)}`);
-      }
-       else {
-        setIsSpeaking(false);
-        setVoiceNotFound(true);
+      } else {
+        // setIsSpeaking(false);
+        // setVoiceNotFound(true);
       }
     }
   }, [listening, finalTranscript]);
@@ -200,6 +206,7 @@ function SearchInput() {
           onFocus={() => onFocusSearchInput()}
           value={searchInput}
           onChange={(e) => onChangeSearch(e)}
+          onKeyDown={(e) => onKeyDownSearch(e)}
           className="outline-none px-2 flex-grow"
           type="text"
         />
@@ -258,11 +265,20 @@ function SearchInput() {
         onCancel={() => setShowVoiceSearch(false)}
         
       >
-        <div className="grid grid-cols-[1fr_minmax(160px,220px)] gap-4 justify-between" >
+        <div className="grid grid-cols-[1fr_auto] gap-4 justify-between" >
           <div>
-            <div className={styles.listening}>
-              {!voiceNotFound ? finalTranscript ? `${finalTranscript}...` : 'Listening...' : 'Please check your microphone or audio levels.'}
-            </div>
+            {/* <div className={styles.listening}>
+              {!voiceNotFound ? finalTranscript ? `${finalTranscript}...` : 'Listening...' : '' }
+            </div> */}
+            {!voiceNotFound && !isSpeaking && <div className={styles.listening}>
+              Listening...
+            </div>}
+            {isSpeaking && finalTranscript && <div className={styles.listening}>
+            {finalTranscript}
+            </div>}
+            { voiceNotFound && <div className={styles.listening}>
+              Please check your microphone or audio levels.
+            </div>}
             
           </div>
           <div className="relative cursor-pointer group"  onClick={() => closeShowVoice()}>

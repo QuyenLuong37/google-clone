@@ -31,7 +31,7 @@ const Home: NextPage = () => {
       </header>
 
       {/* Body */}
-      <form className='flex  items-center flex-col xl:mt-12 2xl:mt-32 space-y-6 flex-grow'>
+      <div className='flex  items-center flex-col xl:mt-12 2xl:mt-32 space-y-6 flex-grow'>
          <div className="relative">
           <Image src='https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png' objectFit='cover' width='272px' height='92px' alt='' />
          </div>
@@ -46,7 +46,7 @@ const Home: NextPage = () => {
         <div>
         Google offered in: <div className='inline-flex text-[#1a0dab] transition duration-200 hover:underline'>Tiếng việt</div>
         </div>
-      </form>
+      </div>
 
       <Footer />
     </div>
