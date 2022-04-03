@@ -20,6 +20,9 @@ function Results() {
     setPageIndex(1);
       if (router.query.q) {
         setSearchInput(decodeURI(router.query.q as any))
+        getSearchResults(router.query.q as string, 0).then(res => {
+          setSearchResults(res)
+        })
       }
   }, [router.query, setSearchInput]);
 

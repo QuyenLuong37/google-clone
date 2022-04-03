@@ -1,7 +1,7 @@
 import { MicrophoneIcon, SearchIcon } from "@heroicons/react/outline";
 import { Button, message, Modal, Spin } from "antd";
 import { useRouter } from "next/router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import SpeechRecognition, {
   useSpeechRecognition
 } from "react-speech-recognition";
@@ -9,7 +9,7 @@ import { useRecoilState } from "recoil";
 import { getSearchResults } from "../libs/search";
 import { searchInputState, searchResultsState } from "../state/searchAtom";
 import styles from '../styles/SearchInput.module.css';
-
+import _ from 'lodash';
 function SearchInput() {
   const [searchInput, setSearchInput]: any = useRecoilState(searchInputState);
   const [searchResults, setSearchResults]: any =
@@ -29,26 +29,31 @@ function SearchInput() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
   const [voiceNotFound, setVoiceNotFound] = useState(false);
-  const [isInitVoiceSearch, setIsInitVoiceSearch] = useState(true);
   const onChangeSearch = async (e: React.ChangeEvent<HTMLInputElement> | any) => {
-    console.log("🚀 key: ", e.key)
     setShowSuggest(true);
     setSearchInput(e.target.value);
-  };
-  const onKeyDownSearch = async (e: any) => {
-    console.log("🚀 key: ", e.key)
-    if (e.key === 'Enter') {
-      router.push(`/results?q=${encodeURI(searchInput)}`);
+    if (e.target.value) {
+      // getSearchResults(e.target.value).then((res: any) => {
+      //   setSearchResults(res);
+      // });
+      debounceSuggestDropDown(e.target.value);
     }
   };
 
-  useEffect(() => {
-    if (searchInput) {
-      // getSearchResults(searchInput).then(res => {
-      //     setSearchResults(res);
-      // });
+  const getSearchResultsCallback = (val: any) => {
+    getSearchResults(val).then((res: any) => {
+      setSearchResults(res);
+    });
+  }
+
+  const debounceSuggestDropDown = useCallback(_.debounce((searchValue: any) => getSearchResultsCallback(searchValue), 300), [])
+
+  const onKeyDownSearch = async (e: any) => {
+    if (e.key === 'Enter') {
+      setSearchInput(null)
+      router.push(`/results?q=${encodeURI(searchInput)}`);
     }
-  }, [searchInput, setSearchResults])
+  };
 
   useEffect(() => {
     function handleClickOutside(event: any) {
@@ -59,74 +64,52 @@ function SearchInput() {
     // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      // Unbind the event listener on clean up
-      console.log("unbind");
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [ref]);
   
   useEffect(() => {
-    console.log("listening: ", listening);
+    // console.log("listening: ", listening);
     let timeout: any;
     if (listening) {
-      setIsInitVoiceSearch(false);
       timeout = setTimeout(() => {
-        console.log("🚀finalTranscript", finalTranscript)
-        if (finalTranscript) {
-          setShowVoiceSearch(false);
-          router.push(`/results?q=${encodeURI(finalTranscript)}`);
-        } else {
+        if (!finalTranscript) {
           setIsSpeaking(false);
           setVoiceNotFound(true);
+          SpeechRecognition.stopListening();
         }
-        
-        setIsInitVoiceSearch(true);
-        SpeechRecognition.stopListening();
       }, 6000);
       return () => {
         clearTimeout(timeout)
       }
-    } else if (!isInitVoiceSearch) {
+    } else {
       if (finalTranscript) {
-        setShowVoiceSearch(false);
+        setIsSpeaking(false);
+        setShowVoiceSearch(false)
         router.push(`/results?q=${encodeURI(finalTranscript)}`);
-      } else {
-        // setIsSpeaking(false);
-        // setVoiceNotFound(true);
       }
     }
   }, [listening, finalTranscript]);
 
   useEffect(() => {
-    console.log("🚀voiceNotFound", voiceNotFound)
     if (voiceNotFound) {
       let timeout = setTimeout(() => {
+        setIsSpeaking(false);
         setShowVoiceSearch(false)
         setVoiceNotFound(false);
-        setIsInitVoiceSearch(true);
         SpeechRecognition.stopListening();
       }, 6000);
-      
       return () => clearTimeout(timeout);
     }
   }, [voiceNotFound]);
   useEffect(() => {
-    console.log("transcript: ", transcript);
     if (transcript) {
       setIsSpeaking(listening);
     }
   }, [transcript]);
   // useEffect(() => {
-  //   console.log("interimTranscript: ", interimTranscript);
-  // }, [interimTranscript]);
-  useEffect(() => {
-    console.log("finalTranscript: ", finalTranscript);
-    // console.log("listening: ", listening);
-    // if (!listening && finalTranscript) {
-    //   setShowVoiceSearch(false);
-    //   router.push(`/results?q=${encodeURI(finalTranscript)}`);
-    // }
-  }, [finalTranscript]);
+  //   console.log("listening: ", listening);
+  // }, [finalTranscript]);
   
   
   const onFocusSearchInput = () => {
@@ -145,14 +128,14 @@ function SearchInput() {
       message.error("Trình duyệt không hỗ trợ!");
     } else {
       setShowVoiceSearch(true)
-      setIsInitVoiceSearch(true);
       SpeechRecognition.startListening();
     } 
   }
 
   const closeShowVoice = () => {
-    setShowVoiceSearch(false);
-    setIsInitVoiceSearch(true);
+    setIsSpeaking(false);
+    setShowVoiceSearch(false)
+    setVoiceNotFound(false);
     SpeechRecognition.stopListening();
   }
 
@@ -160,7 +143,7 @@ function SearchInput() {
     console.log("transcript: ", transcript);
     console.log("interimTranscript: ", interimTranscript);
     console.log("finalTranscript: ", finalTranscript);
-    console.log("listening: ", listening);
+    // console.log("listening: ", listening);
     console.log(
       "browserSupportsSpeechRecognition: ",
       browserSupportsSpeechRecognition
@@ -171,6 +154,7 @@ function SearchInput() {
 
   const navigateToResults = (query: any) => {
     setShowSuggest(false);
+    setSearchInput(null)
     router.push(`/results?q=${encodeURI(query)}`);
   };
 
@@ -179,7 +163,7 @@ function SearchInput() {
       ref={ref}
       className=" relative max-w-md sm:max-w-xl w-full flex items-center  transition duration-200   mx-auto group"
     >
-      <Spin spinning={isSpeaking} />
+      {/* <Spin spinning={isSpeaking} /> */}
       {/* <Button type="primary" onClick={() => startListening()}>
         Start listening
       </Button> */}
@@ -273,8 +257,8 @@ function SearchInput() {
             {!voiceNotFound && !isSpeaking && <div className={styles.listening}>
               Listening...
             </div>}
-            {isSpeaking && finalTranscript && <div className={styles.listening}>
-            {finalTranscript}
+            {transcript && <div className={styles.listening}>
+              {transcript}
             </div>}
             { voiceNotFound && <div className={styles.listening}>
               Please check your microphone or audio levels.
