@@ -175,9 +175,11 @@ function SearchInput() {
   };
 
   const navigateToResults = (query: any) => {
-    setShowSuggest(false);
-    setSearchInput(null)
-    router.push(`/results?q=${encodeURI(query)}`);
+    if (query) {
+      setShowSuggest(false);
+      setSearchInput(null)
+      router.push(`/results?q=${encodeURI(query)}`);
+    }
   };
 
   return (

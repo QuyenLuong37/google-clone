@@ -12,6 +12,11 @@ const Home: NextPage = () => {
    
   const router = useRouter();
   const searctInput = useRecoilValue(searchInputState);
+  const navigateToResults = () => {
+    if (searctInput) {
+      router.push(`/results?q=${encodeURI(searctInput)}`)
+    }
+  };
   return (
     <div className='grid grid-rows-[auto_1fr] h-full'>
       <Head>
@@ -43,7 +48,7 @@ const Home: NextPage = () => {
         <SearchInput />
 
         <div className='flex justify-center space-x-4'>
-          <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-200 bg-gray-100 rounded text-sm' onClick={() => router.push(`/results?q=${encodeURI(searctInput)}`)}>Google Search</button>
+          <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-200 bg-gray-100 rounded text-sm' onClick={() => navigateToResults()}>Google Search</button>
           <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-200 bg-gray-100 rounded text-sm'>I&apos;m Feeling Lucky</button>
         </div>
 
