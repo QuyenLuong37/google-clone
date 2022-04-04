@@ -15,6 +15,10 @@ function SearchInput() {
   const [searchResults, setSearchResults]: any =
     useRecoilState(searchResultsState);
   const [showSuggest, setShowSuggest] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showVoiceSearch, setShowVoiceSearch] = useState(false);
+  const [voiceNotFound, setVoiceNotFound] = useState(false);
+  const [isInitVoiceSearch, setIsInitVoiceSearch] = useState(false);
   const router = useRouter();
   const ref: any = useRef(null);
   const {
@@ -26,9 +30,7 @@ function SearchInput() {
     browserSupportsSpeechRecognition,
     isMicrophoneAvailable
   } = useSpeechRecognition();
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [showVoiceSearch, setShowVoiceSearch] = useState(false);
-  const [voiceNotFound, setVoiceNotFound] = useState(false);
+  const [isMicAvailable, setIsMicAvailable] = useState(isMicrophoneAvailable);
   const onChangeSearch = async (e: React.ChangeEvent<HTMLInputElement> | any) => {
     setShowSuggest(true);
     setSearchInput(e.target.value);
@@ -67,10 +69,15 @@ function SearchInput() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [ref]);
+
+  useEffect(() => {
+    console.log('init');
+    SpeechRecognition.stopListening();
+    
+  }, [])
   
   useEffect(() => {
     let timeout: any;
-    console.log("🚀 ~ file: SearchInput.tsx ~ line 74 ~ useEffect ~ listening", listening)
     if (listening) {
       timeout = setTimeout(() => {
         if (!finalTranscript) {
@@ -130,14 +137,18 @@ function SearchInput() {
     } else if (!browserSupportsSpeechRecognition) {
       message.error("Trình duyệt không hỗ trợ!");
     } else {
+      setIsInitVoiceSearch(true);
+      setShowVoiceSearch(true)
       navigator.mediaDevices.getUserMedia({video: false, audio: true, preferCurrentTab: true, peerIdentity: 'aha'}).then( stream => {
         if (stream.id) {
-          setShowVoiceSearch(true)
+          setIsInitVoiceSearch(false);
           SpeechRecognition.startListening();
         }    
         
       }).catch( err => {
-          console.log("u got an error:" + err)
+        setIsInitVoiceSearch(false);
+        setIsMicAvailable(false);
+        console.log("u got an error:" + err)
       });
     } 
   }
@@ -149,18 +160,18 @@ function SearchInput() {
     SpeechRecognition.stopListening();
   }
 
-  // const getRecognition = async () => {
-  //   console.log("transcript: ", transcript);
-  //   console.log("interimTranscript: ", interimTranscript);
-  //   console.log("finalTranscript: ", finalTranscript);
-  //   // console.log("listening: ", listening);
-  //   console.log(
-  //     "browserSupportsSpeechRecognition: ",
-  //     browserSupportsSpeechRecognition
-  //   );
-  //   console.log("isMicrophoneAvailable: ", isMicrophoneAvailable);
-  //   console.log("sdadsadSA: ", SpeechRecognition.getRecognition());
-  // };
+  const getRecognition = async () => {
+    console.log("transcript: ", transcript);
+    console.log("interimTranscript: ", interimTranscript);
+    console.log("finalTranscript: ", finalTranscript);
+    // console.log("listening: ", listening);
+    console.log(
+      "browserSupportsSpeechRecognition: ",
+      browserSupportsSpeechRecognition
+    );
+    console.log("isMicrophoneAvailable: ", isMicrophoneAvailable);
+    console.log("sdadsadSA: ", SpeechRecognition.getRecognition());
+  };
 
   const navigateToResults = (query: any) => {
     setShowSuggest(false);
@@ -264,15 +275,26 @@ function SearchInput() {
             {/* <div className={styles.listening}>
               {!voiceNotFound ? finalTranscript ? `${finalTranscript}...` : 'Listening...' : '' }
             </div> */}
-            {!voiceNotFound && !isSpeaking && <div className={styles.listening}>
-              Listening...
+            {
+              isMicAvailable && (isInitVoiceSearch ? <div className={styles.listening}>
+                Waiting...
+              </div> : <>
+                  {!voiceNotFound && !isSpeaking && <div className={styles.listening}>
+                  Listening...
+                </div>}
+                {transcript && <div className={styles.listening}>
+                  {transcript}
+                </div>}
+                { voiceNotFound && <div className={styles.listening}>
+                  Please check your microphone or audio levels.
+                </div>}
+              </> )
+            }
+
+            {!isMicAvailable && <div className={styles.listening}>
+              Voice search has been turned off.
             </div>}
-            {transcript && <div className={styles.listening}>
-              {transcript}
-            </div>}
-            { voiceNotFound && <div className={styles.listening}>
-              Please check your microphone or audio levels.
-            </div>}
+            
             
           </div>
           <div className="relative cursor-pointer group"  onClick={() => closeShowVoice()}>
