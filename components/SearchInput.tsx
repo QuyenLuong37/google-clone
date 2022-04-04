@@ -24,7 +24,7 @@ function SearchInput() {
     resetTranscript,
     listening,
     browserSupportsSpeechRecognition,
-    isMicrophoneAvailable,
+    isMicrophoneAvailable
   } = useSpeechRecognition();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
@@ -70,6 +70,7 @@ function SearchInput() {
   
   useEffect(() => {
     let timeout: any;
+    console.log("🚀 ~ file: SearchInput.tsx ~ line 74 ~ useEffect ~ listening", listening)
     if (listening) {
       timeout = setTimeout(() => {
         if (!finalTranscript) {
@@ -121,15 +122,23 @@ function SearchInput() {
     }
   };
 
-  const onClickVoice = () => {
+  const onClickVoice = async () => {
+    console.log("🚀 ~ file: SearchInput.tsx ~ line 126 ~ onClickVoice ~ isMicrophoneAvailable", isMicrophoneAvailable)
     if (!isMicrophoneAvailable) {
       // Render some fallback contentt
       message.error("Vui lòng cho phép trình duyệt truy cập micro!");
     } else if (!browserSupportsSpeechRecognition) {
       message.error("Trình duyệt không hỗ trợ!");
     } else {
-      setShowVoiceSearch(true)
-      SpeechRecognition.startListening();
+      navigator.mediaDevices.getUserMedia({video: false, audio: true, preferCurrentTab: true, peerIdentity: 'aha'}).then( stream => {
+        if (stream.id) {
+          setShowVoiceSearch(true)
+          SpeechRecognition.startListening();
+        }    
+        
+      }).catch( err => {
+          console.log("u got an error:" + err)
+      });
     } 
   }
 
