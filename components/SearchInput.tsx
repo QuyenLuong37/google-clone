@@ -71,9 +71,10 @@ function SearchInput() {
   }, [ref]);
 
   useEffect(() => {
-    console.log('init');
-    SpeechRecognition.stopListening();
-    
+    return () => {
+      console.log('unbind');
+      SpeechRecognition.stopListening();
+    }
   }, [])
   
   useEffect(() => {
@@ -90,12 +91,12 @@ function SearchInput() {
         clearTimeout(timeout)
       }
     } else {
-      if (finalTranscript) {
+      if (finalTranscript || transcript) {
         setIsSpeaking(false);
         setShowVoiceSearch(false)
         // resetTranscript();
         SpeechRecognition.stopListening();
-        router.push(`/results?q=${encodeURI(finalTranscript)}`);
+        router.push(`/results?q=${encodeURI(finalTranscript ?? transcript)}`);
       }
     }
   }, [listening, finalTranscript]);
@@ -154,10 +155,10 @@ function SearchInput() {
   }
 
   const closeShowVoice = () => {
+    SpeechRecognition.stopListening();
     setIsSpeaking(false);
     setShowVoiceSearch(false)
     setVoiceNotFound(false);
-    SpeechRecognition.stopListening();
   }
 
   const getRecognition = async () => {
@@ -277,7 +278,7 @@ function SearchInput() {
             </div> */}
             {
               isMicAvailable && (isInitVoiceSearch ? <div className={styles.listening}>
-                Waiting...
+                <div className="text-[#858585]">Waiting...</div>
               </div> : <>
                   {!voiceNotFound && !isSpeaking && <div className={styles.listening}>
                   Listening...

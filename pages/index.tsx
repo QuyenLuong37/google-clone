@@ -1,13 +1,17 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
-import { useEffect } from 'react'
 import Avatar from '../components/Avatar'
 import Footer from '../components/Footer'
 import SearchInput from '../components/SearchInput'
+import { useRouter } from "next/router";
+import { useRecoilValue } from 'recoil'
+import { searchInputState } from '../state/searchAtom'
 
 const Home: NextPage = () => {
-  
+   
+  const router = useRouter();
+  const searctInput = useRecoilValue(searchInputState);
   return (
     <div className='grid grid-rows-[auto_1fr] h-full'>
       <Head>
@@ -39,7 +43,7 @@ const Home: NextPage = () => {
         <SearchInput />
 
         <div className='flex justify-center space-x-4'>
-          <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-200 bg-gray-100 rounded text-sm'>Google Search</button>
+          <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-200 bg-gray-100 rounded text-sm' onClick={() => router.push(`/results?q=${encodeURI(searctInput)}`)}>Google Search</button>
           <button className='py-2 px-4 cursor-pointer transition duration-200 hover:bg-gray-200 bg-gray-100 rounded text-sm'>I&apos;m Feeling Lucky</button>
         </div>
 
