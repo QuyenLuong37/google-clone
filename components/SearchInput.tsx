@@ -69,7 +69,6 @@ function SearchInput() {
   }, [ref]);
   
   useEffect(() => {
-    // console.log("listening: ", listening);
     let timeout: any;
     if (listening) {
       timeout = setTimeout(() => {
@@ -86,6 +85,8 @@ function SearchInput() {
       if (finalTranscript) {
         setIsSpeaking(false);
         setShowVoiceSearch(false)
+        // resetTranscript();
+        SpeechRecognition.stopListening();
         router.push(`/results?q=${encodeURI(finalTranscript)}`);
       }
     }
@@ -139,18 +140,18 @@ function SearchInput() {
     SpeechRecognition.stopListening();
   }
 
-  const getRecognition = async () => {
-    console.log("transcript: ", transcript);
-    console.log("interimTranscript: ", interimTranscript);
-    console.log("finalTranscript: ", finalTranscript);
-    // console.log("listening: ", listening);
-    console.log(
-      "browserSupportsSpeechRecognition: ",
-      browserSupportsSpeechRecognition
-    );
-    console.log("isMicrophoneAvailable: ", isMicrophoneAvailable);
-    console.log("sdadsadSA: ", SpeechRecognition.getRecognition());
-  };
+  // const getRecognition = async () => {
+  //   console.log("transcript: ", transcript);
+  //   console.log("interimTranscript: ", interimTranscript);
+  //   console.log("finalTranscript: ", finalTranscript);
+  //   // console.log("listening: ", listening);
+  //   console.log(
+  //     "browserSupportsSpeechRecognition: ",
+  //     browserSupportsSpeechRecognition
+  //   );
+  //   console.log("isMicrophoneAvailable: ", isMicrophoneAvailable);
+  //   console.log("sdadsadSA: ", SpeechRecognition.getRecognition());
+  // };
 
   const navigateToResults = (query: any) => {
     setShowSuggest(false);
